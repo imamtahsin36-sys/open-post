@@ -1,0 +1,301 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Alkenegram</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+    <style>
+        :root {
+            --bg: #74ebd5; --glass: rgba(255, 255, 255, 0.45);
+            --border: rgba(255, 255, 255, 0.5); --t: #003366; --p: #0078d7; --red: #ff3040;
+        }
+
+        /* Themes */
+        body.t-aero { --bg: linear-gradient(180deg, #2af598, #009efd); }
+        body.t-midnight { --bg: #0f0c29; --glass: rgba(0,0,0,0.6); --t: #fff; --border: rgba(255,255,255,0.1); }
+        body.t-sunset { --bg: linear-gradient(45deg, #ff9966, #ff5e62); --t: #fff; }
+        body.t-ocean { --bg: linear-gradient(135deg, #2193b0, #6dd5ed); --t: #fff; }
+        body.t-emerald { --bg: linear-gradient(135deg, #11998e, #38ef7d); --t: #fff; }
+        body.t-lavender { --bg: linear-gradient(135deg, #834d9b, #d04ed6); --t: #fff; }
+        body.t-rose { --bg: #feada6; --t: #b03060; --p: #ff5e62; }
+        body.t-lemon { --bg: #f9d423; --t: #333; }
+        body.t-cyber { --bg: #000428; --t: #00f2ff; --glass: rgba(0,0,0,0.8); --p: #00f2ff; --border: #00f2ff33; }
+        body.t-frost { --bg: #e6e9f0; --t: #2c3e50; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg) fixed; color: var(--t); transition: 0.4s; overflow-x: hidden; padding-top: env(safe-area-inset-top); }
+        
+        .glass { background: var(--glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 24px; }
+        
+        .nav { height: 75px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 1000; padding: 0 10px; }
+        .nav-in { width: 100%; max-width: 480px; display: flex; justify-content: space-between; padding: 0 15px; align-items: center; gap: 10px; }
+        
+        .search-bar { flex: 1; padding: 10px 12px; border-radius: 20px; border: none; background: rgba(255,255,255,0.2); color: inherit; font-weight: 600; font-size: 13px; min-width: 0; }
+        
+        .container { width: 100%; max-width: 480px; margin: 0 auto; padding: 15px; }
+        .post { margin-bottom: 25px; overflow: hidden; border-radius: 30px; }
+        .post-h { padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
+        .post-img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+        
+        .btn-p { background: var(--p); color: #fff; border: none; padding: 8px 16px; border-radius: 12px; font-weight: 800; cursor: pointer; }
+        .like-btn { background: none; border: none; cursor: pointer; color: inherit; display: flex; align-items: center; gap: 6px; font-weight: 800; padding: 0; margin: 5px 0 10px; }
+        .like-btn svg { width: 22px; fill: none; stroke: currentColor; stroke-width: 2.5px; transition: 0.2s; }
+        .like-btn.active svg { fill: var(--red); stroke: var(--red); }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .modal-content { width: 92%; max-width: 400px; padding: 25px; max-height: 85vh; overflow-y: auto; }
+        
+        .badge { position: absolute; top: -5px; right: -5px; background: var(--red); color: #fff; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: 800; border: 2px solid #fff; }
+        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+        .theme-opt { width: 100%; aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 2px solid #fff; }
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+        .av-opt { width: 100%; border-radius: 50%; cursor: pointer; border: 3px solid transparent; }
+        .av-opt.active { border-color: var(--p); transform: scale(1.1); }
+    </style>
+</head>
+<body class="t-aero">
+
+<div class="nav glass">
+    <div class="nav-in">
+        <strong onclick="location.reload()" style="cursor:pointer; font-size:1.1rem; white-space:nowrap;">Alkenegram</strong>
+        <input type="text" class="search-bar" placeholder="Search..." oninput="window.loadFeed(this.value)">
+        
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="position:relative; cursor:pointer; padding: 5px;" onclick="openReqs()">
+                <span style="font-size:1.3rem;">🔔</span>
+                <div id="nb" class="badge" style="display:none">0</div>
+            </div>
+            <span onclick="openSet()" style="cursor:pointer; font-size:1.3rem; padding: 5px;">⚙️</span>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="glass" style="padding:15px; margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+        <img id="u-av" style="width:50px; height:50px; border-radius:50%; border:2px solid #fff">
+        <div style="flex:1"><h3 id="u-nm" style="margin:0; font-size:1rem;">User</h3><small id="f-ct">0 Friends</small></div>
+        <button class="btn-p" onclick="document.getElementById('fi').click()">+ Post</button>
+    </div>
+    <div id="feed"></div>
+</div>
+
+<input type="file" id="fi" style="display:none" accept="image/*">
+
+<div id="m-req" class="modal"><div class="modal-content glass">
+    <h3 style="margin-top:0">Friend Requests</h3><div id="rl"></div>
+    <button onclick="closeM()" class="btn-p" style="width:100%; margin-top:15px;">Close</button>
+</div></div>
+
+<div id="m-set" class="modal"><div class="modal-content glass">
+    <h3 style="margin-top:0">Settings</h3>
+    <input id="in-nm" placeholder="Edit Name" style="width:100%; padding:12px; border-radius:12px; border:1px solid var(--border); margin-bottom:15px; background:rgba(255,255,255,0.1); color:inherit;">
+    <p style="font-size:11px; font-weight:800; opacity:0.6">THEMES</p>
+    <div class="theme-grid" id="tg"></div>
+    <p style="font-size:11px; font-weight:800; opacity:0.6">AVATARS</p>
+    <div class="avatar-grid" id="ag"></div>
+    <button onclick="saveSet()" class="btn-p" style="width:100%">Save & Refresh</button>
+</div></div>
+
+<div id="m-post" class="modal"><div class="modal-content glass">
+    <h3>New Post</h3><div id="prev"></div>
+    <textarea id="cap" placeholder="Write a caption..." style="width:100%; margin:15px 0; padding:12px; border-radius:12px; background:rgba(255,255,255,0.1); color:inherit; border:1px solid var(--border);"></textarea>
+    <button id="up-btn" class="btn-p" style="width:100%">Share Post</button>
+</div></div>
+
+<script>
+    const config = { apiKey: "AIzaSyASOOxf4lFXrTs9XWmXNCC-UHHsR1HAoJU", authDomain: "alkene-95242.firebaseapp.com", projectId: "alkene-95242", storageBucket: "alkene-95242.firebasestorage.app", messagingSenderId: "1345856069", appId: "1:1345856069:web:ad3de9c66ab3c58ab5f92c" };
+    firebase.initializeApp(config);
+    const db = firebase.firestore(), auth = firebase.auth();
+
+    // Sound Library
+    const snd = {
+        pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+        tap: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3'),
+        post: new Audio('https://assets.mixkit.co/active_storage/sfx/2014/2014-preview.mp3'),
+        like: new Audio('https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3')
+    };
+    function play(s) { s.currentTime = 0; s.play().catch(()=>{}); }
+
+    const seeds = ['Felix','Aneka','Max','Luna','Jack','Milo','Kiki','Jasper','Zoe','Leo','Coco','Ruby','Oscar','Toby','Sasha','Bear'];
+    const themes = { aero: '#009efd', midnight: '#1a1a1a', sunset: '#ff5e62', ocean: '#2193b0', emerald: '#11998e', lavender: '#834d9b', rose: '#feada6', lemon: '#f9d423', cyber: '#00f2ff', frost: '#e6e9f0' };
+
+    let user = {
+        name: localStorage.getItem('ak_n') || "Aero_" + Math.floor(Math.random()*999),
+        av: localStorage.getItem('ak_a') || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+        friends: JSON.parse(localStorage.getItem('ak_f') || "[]")
+    };
+
+    function timeAgo(ts) {
+        if(!ts) return "now";
+        const d = ts.toDate ? ts.toDate() : new Date(ts);
+        const s = Math.floor((new Date() - d)/1000);
+        if(s < 60) return s+"s"; if(s < 3600) return Math.floor(s/60)+"m";
+        if(s < 86400) return Math.floor(s/3600)+"h"; return Math.floor(s/86400)+"d";
+    }
+
+    auth.signInAnonymously().then(() => {
+        document.getElementById('u-nm').innerText = user.name;
+        document.getElementById('u-av').src = user.av;
+        document.getElementById('f-ct').innerText = user.friends.length + " Friends";
+        window.loadFeed(); listenReq();
+    });
+
+    window.loadFeed = (filter = null) => {
+        db.collection("posts").orderBy("createdAt", "desc").onSnapshot(snap => {
+            const f = document.getElementById('feed'); f.innerHTML = '';
+            snap.forEach(d => {
+                const p = d.data();
+                if(filter && !p.author.toLowerCase().includes(filter.toLowerCase())) return;
+                const isF = user.friends.includes(p.author);
+                const liked = localStorage.getItem(`l_${d.id}`);
+                f.innerHTML += `
+                    <div class="post glass">
+                        <div class="post-h">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <img src="${p.avatar}" style="width:35px; border-radius:50%">
+                                <div><b>${p.author}</b><br><small style="font-size:9px; opacity:0.6">${timeAgo(p.createdAt)}</small></div>
+                            </div>
+                            <div style="display:flex; gap:10px; align-items:center">
+                                ${p.author !== user.name && !isF ? `<button class="btn-p" style="font-size:10px; padding:4px 8px;" onclick="sendReq('${p.author}')">Add</button>` : ''}
+                                ${p.author === user.name ? `<span onclick="delP('${d.id}')" style="cursor:pointer; color:var(--red); font-weight:800; padding:5px;">✕</span>` : ''}
+                            </div>
+                        </div>
+                        <img src="${p.image}" class="post-img" ondblclick="like('${d.id}')">
+                        <div style="padding:15px;">
+                            <button class="like-btn ${liked?'active':''}" onclick="like('${d.id}')">
+                                <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                <span>${p.likes || 0}</span>
+                            </button>
+                            <p style="margin:0;"><b>${p.author}</b> ${p.caption}</p>
+                            <div style="border-top:1px solid var(--border); margin-top:12px; padding-top:10px;">
+                                ${(p.comments || []).map(c => `
+                                    <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:5px;">
+                                        <span><b>${c.author}</b> ${c.text}</span>
+                                        ${c.author === user.name ? `<span onclick="delC('${d.id}','${c.cid}')" style="cursor:pointer; opacity:0.4; padding:2px 5px;">✕</span>` : ''}
+                                    </div>
+                                `).join('')}
+                                <div style="display:flex; gap:8px; margin-top:10px;">
+                                    <input id="ci-${d.id}" placeholder="Comment..." style="flex:1; background:none; border:none; border-bottom:1px solid var(--border); color:inherit; font-size:12px;">
+                                    <button onclick="addC('${d.id}')" style="background:none; border:none; color:var(--p); font-weight:800; font-size:11px; cursor:pointer;">POST</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        });
+    };
+
+    window.like = (id) => {
+        play(snd.like);
+        const ref = db.collection("posts").doc(id);
+        if(localStorage.getItem(`l_${id}`)) {
+            localStorage.removeItem(`l_${id}`);
+            ref.update({ likes: firebase.firestore.FieldValue.increment(-1) });
+        } else {
+            localStorage.setItem(`l_${id}`, "t");
+            ref.update({ likes: firebase.firestore.FieldValue.increment(1) });
+        }
+    };
+
+    window.addC = (id) => {
+        play(snd.tap);
+        const inp = document.getElementById(`ci-${id}`);
+        if(!inp.value) return;
+        db.collection("posts").doc(id).update({
+            comments: firebase.firestore.FieldValue.arrayUnion({ author: user.name, text: inp.value, cid: Math.random().toString(36).substr(2, 9) })
+        });
+        inp.value = '';
+    };
+
+    window.delC = (pid, cid) => {
+        db.collection("posts").doc(pid).get().then(doc => {
+            const nc = doc.data().comments.filter(c => c.cid !== cid);
+            db.collection("posts").doc(pid).update({ comments: nc });
+        });
+    };
+
+    window.sendReq = (t) => {
+        play(snd.pop);
+        db.collection("requests").add({ from: user.name, to: t, status: "pending", createdAt: Date.now() });
+        alert("Request Sent!");
+    };
+
+    function listenReq() {
+        db.collection("requests").where("to", "==", user.name).where("status", "==", "pending").onSnapshot(snap => {
+            document.getElementById('nb').style.display = snap.empty ? 'none' : 'block';
+            document.getElementById('nb').innerText = snap.size;
+            const rl = document.getElementById('rl'); rl.innerHTML = snap.empty ? '<p style="text-align:center; opacity:0.5">No requests</p>' : '';
+            snap.forEach(d => {
+                const r = d.data();
+                rl.innerHTML += `<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.1); border-radius:12px;">
+                    <b>${r.from}</b><button class="btn-p" style="font-size:12px" onclick="accReq('${d.id}','${r.from}')">Accept</button>
+                </div>`;
+            });
+        });
+    }
+
+    window.accReq = (id, f) => {
+        play(snd.post);
+        db.collection("requests").doc(id).update({ status: "accepted" });
+        if(!user.friends.includes(f)) user.friends.push(f);
+        localStorage.setItem('ak_f', JSON.stringify(user.friends));
+        location.reload();
+    };
+
+    window.openReqs = () => { play(snd.pop); document.getElementById('m-req').style.display = 'flex'; };
+    window.openSet = () => {
+        play(snd.pop);
+        document.getElementById('m-set').style.display = 'flex';
+        document.getElementById('in-nm').value = user.name;
+        const tg = document.getElementById('tg'); tg.innerHTML = '';
+        Object.keys(themes).forEach(t => {
+            const d = document.createElement('div'); d.className = 'theme-opt'; d.style.background = themes[t];
+            d.onclick = () => { play(snd.tap); document.body.className = 't-'+t; localStorage.setItem('ak_t', t); };
+            tg.appendChild(d);
+        });
+        const ag = document.getElementById('ag'); ag.innerHTML = '';
+        seeds.forEach(s => {
+            const u = `https://api.dicebear.com/7.x/avataaars/svg?seed=${s}`;
+            const img = document.createElement('img'); img.src = u; img.className = `av-opt ${user.av === u ? 'active' : ''}`;
+            img.onclick = () => { play(snd.tap); user.tAv = u; document.querySelectorAll('.av-opt').forEach(i => i.classList.remove('active')); img.classList.add('active'); };
+            ag.appendChild(img);
+        });
+    };
+
+    window.saveSet = () => {
+        play(snd.post);
+        if(document.getElementById('in-nm').value) localStorage.setItem('ak_n', document.getElementById('in-nm').value);
+        if(user.tAv) localStorage.setItem('ak_a', user.tAv);
+        location.reload();
+    };
+
+    window.delP = (id) => { if(confirm("Delete post?")) db.collection("posts").doc(id).delete(); };
+    window.closeM = () => document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+
+    document.getElementById('fi').onchange = (e) => {
+        const r = new FileReader();
+        r.onload = (ev) => {
+            window.tImg = ev.target.result;
+            document.getElementById('m-post').style.display = 'flex';
+            document.getElementById('prev').innerHTML = `<img src="${ev.target.result}" style="width:100%; border-radius:15px; max-height:250px; object-fit:contain">`;
+        };
+        r.readAsDataURL(e.target.files[0]);
+    };
+
+    document.getElementById('up-btn').onclick = async () => {
+        play(snd.post);
+        await db.collection("posts").add({ image: window.tImg, author: user.name, avatar: user.av, caption: document.getElementById('cap').value, likes: 0, comments: [], createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+        location.reload();
+    };
+
+    document.body.className = 't-' + (localStorage.getItem('ak_t') || 'aero');
+</script>
+</body>
+</html>
+
