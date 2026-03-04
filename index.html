@@ -1,0 +1,343 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Alkenegram | Aero</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+            --glass: rgba(255, 255, 255, 0.45);
+            --border: rgba(255, 255, 255, 0.6);
+            --t: #003366; --p: #0078d7; --red: #ff3040;
+        }
+
+        /* 10 Themes */
+        body.t-aero { --bg: linear-gradient(180deg, #2af598 0%, #009efd 100%); }
+        body.t-midnight { --bg: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); --glass: rgba(0,0,0,0.5); --t: #fff; --border: rgba(255,255,255,0.1); }
+        body.t-sunset { --bg: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); --t: #fff; }
+        body.t-ocean { --bg: linear-gradient(135deg, #2193b0 0%, #6dd5ed 100%); --t: #fff; }
+        body.t-emerald { --bg: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); --t: #fff; }
+        body.t-lavender { --bg: linear-gradient(135deg, #834d9b 0%, #d04ed6 100%); --t: #fff; }
+        body.t-rose { --bg: linear-gradient(135deg, #feada6 0%, #f5efef 100%); --t: #b03060; }
+        body.t-lemon { --bg: linear-gradient(135deg, #f9d423 0%, #ff4e50 100%); --t: #fff; }
+        body.t-cyber { --bg: linear-gradient(135deg, #000428 0%, #004e92 100%); --t: #00f2ff; --glass: rgba(0,0,0,0.7); }
+        body.t-frost { --bg: linear-gradient(135deg, #e6e9f0 0%, #eef1f5 100%); --t: #333; }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; min-height: 100vh;
+            background: var(--bg) fixed; color: var(--t); transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass { 
+            background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); 
+            border: 1px solid var(--border); border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15), inset 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .nav { height: 70px; display: flex; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 100; border-radius: 0 0 30px 30px; }
+        .nav-in { width: 100%; max-width: 500px; display: flex; justify-content: space-between; padding: 0 20px; align-items: center; }
+        .container { width: 100%; max-width: 500px; margin: 0 auto; padding: 15px; }
+
+        .profile-card { padding: 15px; margin-bottom: 20px; display: flex; align-items: center; gap: 15px; }
+        .p-avatar { width: 65px; height: 65px; border-radius: 50%; border: 3px solid #fff; object-fit: cover; }
+
+        .post { margin-bottom: 25px; overflow: hidden; border-radius: 30px; }
+        .post-h { padding: 15px; display: flex; align-items: center; justify-content: space-between; }
+        .post-img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 0 0 20px 20px; }
+        .post-f { padding: 18px; }
+        
+        .like-btn { background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 0; outline: none; }
+        .like-btn svg { width: 30px; height: 30px; fill: none; stroke: var(--t); stroke-width: 2px; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .like-btn:active svg { transform: scale(1.3); }
+        .like-btn.active svg { fill: var(--red); stroke: var(--red); filter: drop-shadow(0 0 8px var(--red)); }
+        .like-count { font-weight: 800; font-size: 1.1rem; }
+
+        .comment-sec { border-top: 1px solid var(--border); margin-top: 15px; padding-top: 15px; }
+        .com-item { display: flex; flex-direction: column; margin-bottom: 12px; font-size: 0.9rem; }
+        .com-meta { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .com-ts { font-size: 9px; opacity: 0.5; margin-left: 6px; }
+        
+        .btn-p { 
+            background: linear-gradient(to bottom, #fff 0%, #e0e0e0 100%); color: #0078d7; 
+            border: 1px solid #fff; padding: 8px 16px; border-radius: 12px; font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .btn-p:active { transform: scale(0.95); }
+
+        .friend-btn { border: 1px solid var(--border); background: rgba(255,255,255,0.2); color: inherit; padding: 5px 12px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .friend-btn.active { background: #fff; color: #0078d7; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: 1000; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
+        .modal-content { width: 100%; max-width: 420px; padding: 25px; }
+        
+        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+        .theme-opt { width: 100%; aspect-ratio: 1; border-radius: 10px; cursor: pointer; border: 2px solid #fff; }
+
+        .avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; max-height: 180px; overflow-y: auto; padding-right: 5px; }
+        .av-opt { width: 100%; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: 0.2s; }
+        .av-opt.active { border-color: var(--p); transform: scale(1.1); box-shadow: 0 0 10px var(--p); }
+
+        input, textarea { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.1); color: inherit; outline: none; }
+    </style>
+</head>
+<body class="t-aero">
+
+<div class="nav glass">
+    <div class="nav-in">
+        <span onclick="goHome()" style="font-weight: 900; font-size: 1.4rem; cursor:pointer;">ALKENEGRAM</span>
+        <button onclick="openSettings()" style="background:none; border:none; font-size:20px; cursor:pointer;">⚙️</button>
+    </div>
+</div>
+
+<div class="container">
+    <div id="back-bar" style="display:none; margin-bottom:15px;"><button onclick="goHome()" class="btn-p">← Back</button></div>
+    <div class="profile-card glass">
+        <img id="display-avatar" class="p-avatar" src="">
+        <div style="flex:1"><h3 id="display-name" style="margin:0;"></h3><span style="font-size: 11px; opacity: 0.7;">Frutiger Aero</span></div>
+        <button class="btn-p" onclick="triggerFileUpload()">+ Post</button>
+    </div>
+    <input type="file" id="file-in" style="display:none" accept="image/*">
+    <div id="feed"></div>
+</div>
+
+<div id="settings-modal" class="modal">
+    <div class="modal-content glass">
+        <h3 style="margin-top:0">Settings</h3>
+        <input type="text" id="name-input" placeholder="Username">
+        <div class="theme-grid">
+            <div class="theme-opt" style="background:#009efd" onclick="setTheme('aero')"></div>
+            <div class="theme-opt" style="background:#1a1a1a" onclick="setTheme('midnight')"></div>
+            <div class="theme-opt" style="background:#ff5e62" onclick="setTheme('sunset')"></div>
+            <div class="theme-opt" style="background:#2193b0" onclick="setTheme('ocean')"></div>
+            <div class="theme-opt" style="background:#11998e" onclick="setTheme('emerald')"></div>
+            <div class="theme-opt" style="background:#834d9b" onclick="setTheme('lavender')"></div>
+            <div class="theme-opt" style="background:#feada6" onclick="setTheme('rose')"></div>
+            <div class="theme-opt" style="background:#f9d423" onclick="setTheme('lemon')"></div>
+            <div class="theme-opt" style="background:#000428" onclick="setTheme('cyber')"></div>
+            <div class="theme-opt" style="background:#e6e9f0" onclick="setTheme('frost')"></div>
+        </div>
+        <div class="avatar-grid" id="avatar-picker"></div>
+        <button class="btn-p" onclick="saveSettings()" style="width:100%; margin-top:10px; background:var(--p); color:#fff;">Apply Changes</button>
+        <button onclick="closeModals()" style="width:100%; background:none; border:none; margin-top:10px; color:inherit; opacity:0.6;">Close</button>
+    </div>
+</div>
+
+<div id="post-modal" class="modal">
+    <div class="modal-content glass">
+        <h3>New Post</h3>
+        <div id="preview-container"></div>
+        <textarea id="caption-input" placeholder="Caption..." rows="2" style="margin:10px 0;"></textarea>
+        <button class="btn-p" id="final-post-btn" style="width:100%; background:var(--p); color:#fff;">Share</button>
+        <button onclick="closeModals()" style="width:100%; background:none; border:none; margin-top:10px; color:inherit; opacity:0.6;">Cancel</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, deleteDoc, updateDoc, arrayUnion, arrayRemove, increment, doc, query, onSnapshot, serverTimestamp, orderBy, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyASOOxf4lFXrTs9XWmXNCC-UHHsR1HAoJU", authDomain: "alkene-95242.firebaseapp.com", projectId: "alkene-95242", storageBucket: "alkene-95242.firebasestorage.app", messagingSenderId: "1345856069", appId: "1:1345856069:web:ad3de9c66ab3c58ab5f92c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const sfx = {
+        pop: new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3'),
+        snap: new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3'),
+        bloop: new Audio('https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3'),
+        click: new Audio('https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3')
+    };
+
+    const seeds = ['Felix', 'Aneka', 'Max', 'Luna', 'Jack', 'Milo', 'Kiki', 'Jasper', 'Bella', 'Zoe', 'Leo', 'Coco', 'Ruby', 'Oscar', 'Toby', 'Sasha'];
+
+    let userData = {
+        name: localStorage.getItem('alkene_name') || "Aero_User",
+        avatar: localStorage.getItem('alkene_avatar') || `https://api.dicebear.com/7.x/avataaars/svg?seed=Felix`,
+        friends: JSON.parse(localStorage.getItem('alkene_friends') || "[]")
+    };
+
+    onAuthStateChanged(auth, async (u) => { if(!u) await signInAnonymously(auth); updateUI(); loadFeed(); });
+
+    function updateUI() {
+        document.getElementById('display-name').innerText = userData.name;
+        document.getElementById('display-avatar').src = userData.avatar;
+    }
+
+    function timeAgo(dateInput) {
+        if (!dateInput) return "Just now";
+        const date = (dateInput.toDate) ? dateInput.toDate() : new Date(dateInput);
+        const seconds = Math.floor((new Date() - date) / 1000);
+        if (seconds < 60) return seconds + "s";
+        if (seconds < 3600) return Math.floor(seconds/60) + "m";
+        if (seconds < 86400) return Math.floor(seconds/3600) + "h";
+        return Math.floor(seconds/86400) + "d";
+    }
+
+    window.loadFeed = (filter = null) => {
+        const feed = document.getElementById('feed');
+        document.getElementById('back-bar').style.display = filter ? 'block' : 'none';
+        let q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        if(filter) q = query(collection(db, "posts"), where("author", "==", filter), orderBy("createdAt", "desc"));
+
+        onSnapshot(q, (snap) => {
+            feed.innerHTML = '';
+            snap.forEach(d => {
+                const p = d.data();
+                const isMe = p.author === userData.name;
+                const isFriend = userData.friends.includes(p.author);
+                const hasLiked = localStorage.getItem(`liked_${d.id}`);
+
+                feed.innerHTML += `
+                    <div class="post glass">
+                        <div class="post-h">
+                            <div style="display:flex; align-items:center; gap:8px; cursor:pointer" onclick="loadFeed('${p.author}')">
+                                <img src="${p.avatar}" style="width:30px; height:30px; border-radius:50%; border:2px solid #fff;">
+                                <strong>${p.author}</strong>
+                            </div>
+                            ${!isMe ? `<button class="friend-btn ${isFriend?'active':''}" onclick="toggleFriend('${p.author}')">${isFriend?'Friends':'Add'}</button>` : `<button onclick="delPost('${d.id}')" style="background:none; border:none; color:var(--red); font-size:10px; cursor:pointer">Delete</button>`}
+                        </div>
+                        <img src="${p.image}" class="post-img" ondblclick="likePost('${d.id}')">
+                        <div class="post-f">
+                            <div style="display:flex; align-items:center;">
+                                <button class="like-btn ${hasLiked?'active':''}" onclick="likePost('${d.id}')">
+                                    <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                                    <span class="like-count">${p.likes || 0}</span>
+                                </button>
+                                <span style="margin-left:auto; font-size:10px; opacity:0.6">${timeAgo(p.createdAt)}</span>
+                            </div>
+                            <div style="margin:8px 0"><strong>${p.author}</strong> ${p.caption}</div>
+                            <div class="comment-sec">
+                                ${(p.comments || []).map(c => `
+                                    <div class="com-item">
+                                        <div class="com-meta">
+                                            <span><strong>${c.author}</strong> ${c.text} <span class="com-ts">${timeAgo(c.time)}</span></span>
+                                            ${(c.author === userData.name) ? `<button style="background:none; border:none; opacity:0.4; cursor:pointer" onclick="delComment('${d.id}', '${c.cid}')">✕</button>` : ''}
+                                        </div>
+                                    </div>`).join('')}
+                                <div style="display:flex; gap:5px; margin-top:10px">
+                                    <input type="text" id="in-${d.id}" placeholder="Comment...">
+                                    <button onclick="addComment('${d.id}')" style="background:none; border:none; color:var(--p); font-weight:800; cursor:pointer">POST</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        });
+    };
+
+    window.toggleFriend = (name) => {
+        const i = userData.friends.indexOf(name);
+        if(i > -1) userData.friends.splice(i, 1);
+        else { userData.friends.push(name); sfx.pop.play(); }
+        localStorage.setItem('alkene_friends', JSON.stringify(userData.friends));
+        loadFeed();
+    };
+
+    window.addComment = async (id) => {
+        const el = document.getElementById(`in-${id}`);
+        if(!el.value) return;
+        await updateDoc(doc(db, "posts", id), {
+            comments: arrayUnion({ 
+                author: userData.name, 
+                text: el.value, 
+                cid: Date.now().toString(),
+                time: Date.now() // Added Comment Time
+            })
+        });
+        el.value = ""; sfx.bloop.play();
+    };
+
+    window.delComment = async (pid, cid) => {
+        const postRef = doc(db, "posts", pid);
+        onSnapshot(postRef, async (snap) => {
+            const data = snap.data();
+            const commentObj = data.comments.find(c => c.cid === cid);
+            if(commentObj) await updateDoc(postRef, { comments: arrayRemove(commentObj) });
+        }, { once: true });
+    };
+
+    window.likePost = async (id) => {
+        const key = `liked_${id}`;
+        if(localStorage.getItem(key)) {
+            localStorage.removeItem(key);
+            await updateDoc(doc(db, "posts", id), { likes: increment(-1) });
+        } else {
+            localStorage.setItem(key, "true");
+            sfx.pop.play();
+            await updateDoc(doc(db, "posts", id), { likes: increment(1) });
+        }
+    };
+
+    window.openSettings = () => {
+        sfx.click.play();
+        document.getElementById('settings-modal').style.display = 'flex';
+        document.getElementById('name-input').value = userData.name;
+        window.tempAvatar = userData.avatar;
+        const picker = document.getElementById('avatar-picker'); 
+        picker.innerHTML = '';
+        seeds.forEach(s => {
+            const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${s}`;
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = `av-opt ${window.tempAvatar === url ? 'active' : ''}`;
+            img.onclick = function() {
+                document.querySelectorAll('.av-opt').forEach(el => el.classList.remove('active'));
+                this.classList.add('active');
+                window.tempAvatar = url;
+                sfx.bloop.play();
+            };
+            picker.appendChild(img);
+        });
+    };
+
+    window.saveSettings = () => {
+        sfx.snap.play();
+        userData.name = document.getElementById('name-input').value || "User";
+        userData.avatar = window.tempAvatar;
+        localStorage.setItem('alkene_name', userData.name);
+        localStorage.setItem('alkene_avatar', userData.avatar);
+        location.reload();
+    };
+
+    window.triggerFileUpload = () => {
+        sfx.click.play();
+        document.getElementById('file-in').click();
+    };
+
+    document.getElementById('file-in').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            window.postImg = ev.target.result;
+            document.getElementById('post-modal').style.display = 'flex';
+            document.getElementById('preview-container').innerHTML = `<img src="${ev.target.result}" style="width:100%; border-radius:15px;">`;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    document.getElementById('final-post-btn').onclick = async () => {
+        const btn = document.getElementById('final-post-btn');
+        btn.innerText = "Posting...";
+        btn.disabled = true;
+        await addDoc(collection(db, "posts"), {
+            image: window.postImg, author: userData.name, avatar: userData.avatar,
+            caption: document.getElementById('caption-input').value,
+            likes: 0, comments: [], createdAt: serverTimestamp()
+        });
+        sfx.snap.play();
+        setTimeout(() => location.reload(), 500);
+    };
+
+    window.goHome = () => { sfx.click.play(); loadFeed(); };
+    window.setTheme = (t) => { sfx.bloop.play(); document.body.className = `t-${t}`; localStorage.setItem('alkene_theme', t); };
+    window.closeModals = () => { sfx.click.play(); document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); };
+    window.delPost = async (id) => { if(confirm("Delete post?")) { sfx.snap.play(); await deleteDoc(doc(db, "posts", id)); } };
+
+    const t = localStorage.getItem('alkene_theme') || 'aero';
+    setTheme(t);
+</script>
+</body>
+</html>
+
